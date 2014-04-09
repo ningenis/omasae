@@ -11,6 +11,12 @@ const byte degreeSymbol = B11011111; //Simbol Degree
 const int LED = 13; // Pin untuk LED
 const int BUTTON = 7; // Pin untuk pushbutton
 const int LED2 = 8; // Pin untuk LED ke 2
+const int tiltSensorPin = 9; // Pin untuk sensor gerak
+const int ledPin = 10; // Pin untuk LED sensor gerak
+int tiltSensorPreviousValue = 0; // Nilai sensor gerak sebelumnya
+int tiltSensorCurrentValue = 0; // Nilai sensor gerak saat ini
+long lastTimeMoved = 0; // Nilai gerak dari sensor
+int shakeTime=50; // Nilai waktu gerak
 int val = 0; // value untuk menyimpan keadaan
 int val2 = 0; // value untuk menyimpan keadaan
 int old_val = 0; // value untuk menyimpan keadaan lama
@@ -27,13 +33,18 @@ void setup()
   pinMode(LED, OUTPUT); // Output untuk LED
   pinMode(LED2, OUTPUT); // Output untuk LED
   pinMode(BUTTON, INPUT); // Input Button
+  pinMode (tiltSensorPin, INPUT);
+  digitalWrite (tiltSensorPin, HIGH);
+  pinMode (ledPin, OUTPUT);
 }
 void loop()
 {
+  // Pemmbacaan sensor suhu
   lcd.setCursor(0, 1);  // Set cursor pada kolom 0, baris 1 untuk tampilan angka suhu
   temperature(); // Fungsi penghitungan suhu
   lcd.write(degreeSymbol); // Tulis simbol derajat
   lcd.print("C"); // Tulis simbol celcius
+  // Pembacaan lampu
   val = digitalRead(BUTTON); // Baca nilai button
   // Pengecekan transisi
   if ((val == HIGH) && (old_val == LOW)){
@@ -58,9 +69,22 @@ void loop()
     } else {
       analogWrite(LED, 0); // turn LED OFF
     }
+  // Pembacaan sensor cahaya  
   val2 = analogRead(0);  
   analogWrite(LED2, val/4);
   delay(10);
+  // Pembacaan sensor gerak
+  tiltSensorCurrentValue=digitalRead(tiltSensorPin);
+  if (tiltSensorPreviousValue != tiltSensorCurrentValue){
+    lastTimeMoved = millis();
+    tiltSensorPreviousValue = tiltSensorCurrentValue;
+  }
+  if (millis() - lastTimeMoved < shakeTime){
+    digitalWrite(ledPin, HIGH);
+  }
+  else{
+    digitalWrite(ledPin, LOW);
+  }
 }
 
 //Fungsi Penghitungan suhu
