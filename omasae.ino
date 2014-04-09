@@ -8,6 +8,11 @@ const int numRows = 2; //Jumlah Baris pada LCD
 const int numCols = 16; //Jumlah Kolom pada LCD
 const int inPin = 0; // analog pin
 const byte degreeSymbol = B11011111; //Simbol Degree
+const int LED = 13; // Pin untuk LED
+const int BUTTON = 7; // Pin untuk pushbutton
+int val = 0; // value untuk menyimpan keadaan
+int old_val = 0; // value untuk menyimpan keadaan lama
+int state = 0; // 0 = LED off and 1 = LED on
 
 // Inisialisasi library dengan angka pada interface pin
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
@@ -15,6 +20,8 @@ void setup()
 {
   lcd.begin(numCols, numRows); // Mulai membuat tampilan di LCD
   lcd.print("Suhu sekarang : "); // Pesan pada LCD.
+  pinMode(LED, OUTPUT); // Output untuk LED
+  pinMode(BUTTON, INPUT); // Input Button
 }
 void loop()
 {
@@ -22,6 +29,17 @@ void loop()
   temperature(); // Fungsi penghitungan suhu
   lcd.write(degreeSymbol); // Tulis simbol derajat
   lcd.print("C"); // Tulis simbol celcius
+  val = digitalRead(BUTTON); // Baca nilai button
+  // Pengecekan transisi
+  if ((val == HIGH) && (old_val == LOW)){
+    state = 1 - state;
+  }
+  old_val = val; // Menyimpan nilai state lama
+  if (state == 1) {
+    digitalWrite(LED, HIGH); // LED ON
+  } else {
+    digitalWrite(LED, LOW); // LED OFF
+  }
 }
 
 //Fungsi Penghitungan suhu
