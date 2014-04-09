@@ -10,9 +10,13 @@ const int inPin = 0; // analog pin
 const byte degreeSymbol = B11011111; //Simbol Degree
 const int LED = 13; // Pin untuk LED
 const int BUTTON = 7; // Pin untuk pushbutton
+const int LED2 = 8; // Pin untuk LED ke 2
 int val = 0; // value untuk menyimpan keadaan
+int val2 = 0; // value untuk menyimpan keadaan
 int old_val = 0; // value untuk menyimpan keadaan lama
 int state = 0; // 0 = LED off and 1 = LED on
+int brightness = 128; // Nilai terang lampu
+unsigned long startTime = 0; // waktu tekan tombol
 
 // Inisialisasi library dengan angka pada interface pin
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
@@ -21,6 +25,7 @@ void setup()
   lcd.begin(numCols, numRows); // Mulai membuat tampilan di LCD
   lcd.print("Suhu sekarang : "); // Pesan pada LCD.
   pinMode(LED, OUTPUT); // Output untuk LED
+  pinMode(LED2, OUTPUT); // Output untuk LED
   pinMode(BUTTON, INPUT); // Input Button
 }
 void loop()
@@ -33,13 +38,29 @@ void loop()
   // Pengecekan transisi
   if ((val == HIGH) && (old_val == LOW)){
     state = 1 - state;
+    startTime = millis();
+    delay(10);
   }
+  if ((val == HIGH) && (old_val == HIGH)) {
+  // Jika tombol ditekan lebih dari 500ms.
+    if (state == 1 && (millis() - startTime) > 500) {
+      brightness++; // increment brightness 
+      delay(100); // delay untuk menghindari cahaya naik lebih cepat
+      if (brightness > 255) { // 255 adalah terang maksimum
+        brightness = 0; // setelah nilai 255, kembali ke 0
+        }
+      }
+    }
   old_val = val; // Menyimpan nilai state lama
   if (state == 1) {
-    digitalWrite(LED, HIGH); // LED ON
-  } else {
-    digitalWrite(LED, LOW); // LED OFF
-  }
+    analogWrite(LED, brightness); // turn LED ON at the
+      // current brightness level
+    } else {
+      analogWrite(LED, 0); // turn LED OFF
+    }
+  val2 = analogRead(0);  
+  analogWrite(LED2, val/4);
+  delay(10);
 }
 
 //Fungsi Penghitungan suhu
