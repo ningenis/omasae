@@ -6,7 +6,8 @@ Kode program sistem rumah pintar, OMASAE
 
 const int numRows = 2; //Jumlah Baris pada LCD
 const int numCols = 16; //Jumlah Kolom pada LCD
-const int inPin = 0; // analog pin
+const int inPin = 0; // analog pin untuk sensor suhu
+const int sensorPin = 1; // analog pin untuk sensor cahaya
 const byte degreeSymbol = B11011111; //Simbol Degree
 const int LED = 13; // Pin untuk LED
 const int BUTTON = 7; // Pin untuk pushbutton
@@ -44,7 +45,46 @@ void loop()
   temperature(); // Fungsi penghitungan suhu
   lcd.write(degreeSymbol); // Tulis simbol derajat
   lcd.print("C"); // Tulis simbol celcius
-  // Pembacaan lampu
+  // Pembacaan intensitas lampu
+  brightness();
+  // Pembacaan sensor cahaya  
+  val2 = analogRead(sensorPin);  
+  analogWrite(LED2, val/4);
+  delay(10);
+  // Pembacaan sensor gerak
+  gerak();
+}
+
+//Fungsi Penghitungan suhu
+void temperature()
+{
+  int value = analogRead(inPin); // Menerima nilai dari sensor suhu
+  float millivolts = (value / 1024.0) * 5000; // Konversi nilai analog sensor ke tegangan
+  float celsius = millivolts / 10; // Sensor output = 10mV per degree Celsius
+  float calibrated = celsius + 0.16981663; // Rumus kalibrasi (menggunakan regresi linear)
+  lcd.print(calibrated); // Tampilkan angka suhu pada LCD
+  delay(1000); // Tunggu 1 detik untuk menampilkan pembacaan terbaru
+}
+
+// Fungsi Pembacaan sensor gerak
+void gerak()
+{
+  tiltSensorCurrentValue=digitalRead(tiltSensorPin);
+  if (tiltSensorPreviousValue != tiltSensorCurrentValue){
+    lastTimeMoved = millis();
+    tiltSensorPreviousValue = tiltSensorCurrentValue;
+  }
+  if (millis() - lastTimeMoved < shakeTime){
+    digitalWrite(ledPin, HIGH);
+  }
+  else{
+    digitalWrite(ledPin, LOW);
+  }
+}
+
+// Fungsi Pembacaan intensitas lampu
+void brightness()
+{
   val = digitalRead(BUTTON); // Baca nilai button
   // Pengecekan transisi
   if ((val == HIGH) && (old_val == LOW)){
@@ -69,31 +109,4 @@ void loop()
     } else {
       analogWrite(LED, 0); // turn LED OFF
     }
-  // Pembacaan sensor cahaya  
-  val2 = analogRead(0);  
-  analogWrite(LED2, val/4);
-  delay(10);
-  // Pembacaan sensor gerak
-  tiltSensorCurrentValue=digitalRead(tiltSensorPin);
-  if (tiltSensorPreviousValue != tiltSensorCurrentValue){
-    lastTimeMoved = millis();
-    tiltSensorPreviousValue = tiltSensorCurrentValue;
-  }
-  if (millis() - lastTimeMoved < shakeTime){
-    digitalWrite(ledPin, HIGH);
-  }
-  else{
-    digitalWrite(ledPin, LOW);
-  }
-}
-
-//Fungsi Penghitungan suhu
-void temperature()
-{
-  int value = analogRead(inPin); // Menerima nilai dari sensor suhu
-  float millivolts = (value / 1024.0) * 5000; // Konversi nilai analog sensor ke tegangan
-  float celsius = millivolts / 10; // Sensor output = 10mV per degree Celsius
-  float calibrated = celsius + 0.16981663; // Rumus kalibrasi (menggunakan regresi linear)
-  lcd.print(calibrated); // Tampilkan angka suhu pada LCD
-  delay(1000); // Tunggu 1 detik untuk menampilkan pembacaan terbaru
 }
