@@ -14,6 +14,8 @@ const int BUTTON = 7; // Pin untuk pushbutton
 const int LED2 = 8; // Pin untuk LED ke 2
 const int tiltSensorPin = 9; // Pin untuk sensor gerak
 const int ledPin = 10; // Pin untuk LED sensor gerak
+const int ledPIR = 0; // Pin untuk LED sensor jarak
+const int inputPIR = 6; // Input sensor PIR 
 int tiltSensorPreviousValue = 0; // Nilai sensor gerak sebelumnya
 int tiltSensorCurrentValue = 0; // Nilai sensor gerak saat ini
 long lastTimeMoved = 0; // Nilai gerak dari sensor
@@ -31,12 +33,14 @@ void setup()
 {
   lcd.begin(numCols, numRows); // Mulai membuat tampilan di LCD
   lcd.print("Suhu sekarang : "); // Pesan pada LCD.
-  pinMode(LED, OUTPUT); // Output untuk LED
+  pinMode(LED, OUTPUT); // Output untuk intensitas LED
   pinMode(LED2, OUTPUT); // Output untuk LED
   pinMode(BUTTON, INPUT); // Input Button
-  pinMode (tiltSensorPin, INPUT);
-  digitalWrite (tiltSensorPin, HIGH);
-  pinMode (ledPin, OUTPUT);
+  pinMode (tiltSensorPin, INPUT); // Input sensor gerak
+  digitalWrite (tiltSensorPin, HIGH); // Pembacaan untuk sensor gerak
+  pinMode(ledPin, OUTPUT); // Output untuk LED sensor gerak
+  pinMode(ledPIR, OUTPUT); // Output untuk LED sensor deteksi
+  pinMode(inputPIR, INPUT); // Input pin sensor deteksi
 }
 void loop()
 {
@@ -53,6 +57,8 @@ void loop()
   delay(10);
   // Pembacaan sensor gerak
   gerak();
+  // Pembacaan sensor jarak
+  jarak();
 }
 
 //Fungsi Penghitungan suhu
@@ -108,5 +114,17 @@ void brightness()
       // current brightness level
     } else {
       analogWrite(LED, 0); // turn LED OFF
+    }
+}
+
+//Fungsi Pembacaan sensor jarak
+void jarak()
+{
+  int val3 = digitalRead(inputPin); // Baca masukan
+  if (val3 == HIGH) // cek apakah masukan HIGH
+    {
+      digitalWrite(ledPIR, HIGH); // LED ON jika ada pergerakan ke sensor
+      delay(500);
+      digitalWrite(ledPIR, LOW); // LED OFF
     }
 }
